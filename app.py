@@ -108,7 +108,7 @@ def index():
     file_size_kb = None
     width = None
     height = None
-    saved = False
+    success = False
 
     action = request.form.get("action", "process")
     dni = request.form.get("dni", "").strip()
@@ -128,9 +128,16 @@ def index():
                 processed_link = make_full_url(processed_image)
                 save_record(dni, cell, original_link, processed_link)
                 success_message = "Datos guardados correctamente en archivo TXT."
-                original_image = original_link
-                processed_image = processed_link
-                saved = True
+                success = True
+                original_image = None
+                processed_image = None
+                original_name = None
+                output_name = "carnet.jpg"
+                file_size_kb = None
+                width = None
+                height = None
+                dni = ""
+                cell = ""
         else:
             file = request.files.get("image")
             if not file or file.filename == "":
@@ -188,7 +195,7 @@ def index():
         height=height,
         dni=dni,
         cell=cell,
-        saved=saved,
+        success=success,
     )
 
 

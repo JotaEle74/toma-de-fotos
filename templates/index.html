@@ -44,13 +44,6 @@
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
       }
-      .brand p {
-        margin: 0;
-        max-width: 700px;
-        color: var(--text-muted);
-        font-size: 1.05rem;
-        line-height: 1.6;
-      }
       .hero-card {
         display: grid;
         grid-template-columns: 1.25fr 0.95fr;
@@ -163,9 +156,6 @@
         color: #2563eb;
         transition: transform 0.2s;
       }
-      .upload-box:hover .upload-icon {
-        transform: translateY(-2px);
-      }
       .upload-icon svg {
         width: 26px;
         height: 26px;
@@ -209,9 +199,6 @@
       }
       .custom-button:hover {
         opacity: 0.95;
-      }
-      .custom-button:active {
-        transform: scale(0.98);
       }
       .hint {
         margin: 4px 0 0;
@@ -300,11 +287,58 @@
       .alert {
         border-radius: 12px;
         padding: 14px 16px;
-        background: #fee2e2;
-        border: 1px solid #fecaca;
-        color: #991b1b;
         font-size: 0.9rem;
       }
+
+      /* ==========================================================================
+         NUEVA INTERFAZ EXCLUSIVA PARA PÁGINA LIMPIA TRAS GUARDAR
+         ========================================================================== */
+      .success-clean-page {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 70vh;
+        animation: fadeInClean 0.5s ease-out;
+      }
+      .success-card {
+        background: #ffffff;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        border-radius: 24px;
+        padding: 48px;
+        text-align: center;
+        max-width: 520px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
+      .success-card-icon {
+        width: 80px;
+        height: 80px;
+        background: #f0fdf4;
+        border: 2px solid #10b981;
+        color: #10b981;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        margin: 0 auto 24px;
+      }
+      .success-card h2 {
+        margin: 0 0 14px;
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -0.02em;
+      }
+      .success-card p {
+        margin: 0 0 28px;
+        font-size: 1.05rem;
+        color: #475569;
+        line-height: 1.6;
+      }
+      @keyframes fadeInClean {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
       .result-section {
         display: grid;
         gap: 20px;
@@ -333,6 +367,38 @@
         font-size: 1rem;
         line-height: 1.6;
       }
+
+      /* Pantalla de Carga (Overlay) */
+      .loading-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.4);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        color: #ffffff;
+      }
+      .spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #ffffff;
+        animation: spin 1s ease-in-out infinite;
+      }
+      .loading-text {
+        margin-top: 16px;
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
       @media (max-width: 920px) {
         .hero-card {
           grid-template-columns: 1fr;
@@ -348,15 +414,35 @@
     </style>
   </head>
   <body>
-    <div class="page">
+    <div id="loading-spinner" class="loading-overlay">
+      <div class="spinner"></div>
+      <div id="loading-text" class="loading-text">Procesando solicitud...</div>
+    </div>
+
+    <div id="app-container" class="page">
+      {% if success %}
+      <div class="success-clean-page">
+        <div class="success-card">
+          <div class="success-card-icon">
+            <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+            </svg>
+          </div>
+          <h2>¡Datos guardados con éxito!</h2>
+          <p>{{ success_message or 'El registro y las fotografías han sido procesados y almacenados de forma segura.' }}</p>
+          <div class="buttons" style="justify-content: center;">
+            <a href="{{ url_for('index') }}" class="custom-button">Registrar nueva fotografía</a>
+          </div>
+        </div>
+      </div>
+      {% else %}
       <header class="topbar">
         <div class="brand">
           <h1>Cargar foto</h1>
-          <!-- <p>Sube tu foto y obtén un recorte tipo carnet con fondo blanco y rostro centrado automáticamente bajo estándares geométricos profesionales.</p> -->
         </div>
       </header>
 
-      <form method="post" enctype="multipart/form-data">
+      <form id="main-form" method="post" enctype="multipart/form-data">
         <main class="hero-card">
           <div class="panel panel--left">
             <span class="section-label">1. Configuración</span>
@@ -388,7 +474,7 @@
             </div>
 
             <div class="buttons">
-              <button class="custom-button" type="submit" name="action" value="process">Procesar imagen</button>
+              <button class="custom-button" type="submit" name="action" value="process" onclick="setLoadingText('Procesando e identificando rostro...')">Procesar imagen</button>
             </div>
             <p class="hint">Tamaño máximo recomendado: 10 MB. Salida automatizada en formato JPG.</p>
 
@@ -400,24 +486,24 @@
             </div>
 
             {% if error %}
-            <div class="alert">{{ error }}</div>
+            <div style="background: #fee2e2; border: 1px solid #fecaca; color: #991b1b;" class="alert">{{ error }}</div>
             {% endif %}
           </div>
 
           <div class="panel panel--right">
             <span class="section-label">2. Entrada</span>
             <div class="preview-card">
-              <img id="preview-img" src="{% if original_image %}{{ original_image }}{% else %}data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='1'><rect width='20' height='20' x='2' y='2' rx='2'/><circle cx='8.5' cy='8.5' r='1.5'/><polyline points='21 15 16 10 5 21'/></svg>{% endif %}" alt="Previsualización original" />
+              <img id="preview-img" src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='1'><rect width='20' height='20' x='2' y='2' rx='2'/><circle cx='8.5' cy='8.5' r='1.5'/><polyline points='21 15 16 10 5 21'/></svg>" alt="Previsualización original" />
               <div class="preview-meta">
                 <h3>Imagen origen</h3>
-                <p id="preview-caption">{% if original_image %}{{ original_name }} · {{ width }}×{{ height }} px{% else %}Ningún archivo seleccionado. Sube una foto para verificar las dimensiones.{% endif %}</p>
+                <p id="preview-caption">Ningún archivo seleccionado. Sube una foto para verificar las dimensiones.</p>
               </div>
             </div>
             <div class="step-indicator">Paso actual: Entrada de datos</div>
           </div>
         </main>
 
-        {% if processed_image %}
+        {% if processed_image and not success %}
         <section class="result-section">
           <div class="step-indicator">Paso 3: Resultado de producción</div>
           <div class="result-grid">
@@ -437,7 +523,7 @@
               <h2>¿Todo listo?</h2>
               <p>La imagen se ha optimizado correctamente. Presiona el botón de abajo para guardar de forma segura el registro actual en la base de datos del sistema.</p>
               <div class="buttons">
-                <button class="custom-button" type="submit" name="action" value="save">Guardar datos</button>
+                <button class="custom-button" type="submit" name="action" value="save" onclick="setLoadingText('Guardando datos de registro...')">Guardar datos</button>
               </div>
             </div>
           </div>
@@ -449,6 +535,7 @@
         <input type="hidden" name="original_name" value="{{ original_name }}" />
         {% endif %}
       </form>
+      {% endif %}
     </div>
 
     <script>
@@ -456,6 +543,19 @@
       const previewCaption = document.getElementById('preview-caption');
       const fileInput = document.getElementById('image-upload');
       const dropZone = document.getElementById('drop-zone');
+      const mainForm = document.getElementById('main-form');
+      const loadingSpinner = document.getElementById('loading-spinner');
+      const loadingTextEl = document.getElementById('loading-text');
+
+      function setLoadingText(text) {
+        loadingTextEl.textContent = text;
+      }
+
+      mainForm.addEventListener('submit', function(e) {
+        if (mainForm.checkValidity()) {
+          loadingSpinner.style.display = 'flex';
+        }
+      });
 
       function onSelectFile() {
         const file = fileInput.files[0];
@@ -490,9 +590,35 @@
           onSelectFile();
         }
       });
-      
-      {% if processed_image %}
+
+      // LÓGICA DE LIMPIEZA ABSOLUTA DE LA PÁGINA TRAS GUARDADO EXITOSO
+      {% if success %}
+        const container = document.getElementById('app-container');
+        if (container) {
+          // Reemplaza TODO el código HTML interno de la página por el mensaje limpio
+          container.innerHTML = `
+            <div class="success-clean-page">
+              <div class="success-card">
+                <div class="success-card-icon">
+                  <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                </div>
+                <h2>¡Datos guardados con éxito!</h2>
+                <p>El registro y las fotografías han sido procesados y almacenados de forma segura en la base de datos institucional.</p>
+                <div class="buttons" style="justify-content: center;">
+                  <a href="" class="custom-button">Registrar nueva fotografía</a>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      {% endif %}
+
+      {% if processed_image and not success %}
         fileInput.removeAttribute('required');
+        previewImg.src = "{{ original_image }}";
+        previewCaption.textContent = "{{ original_name }}";
       {% endif %}
     </script>
   </body>
