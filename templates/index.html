@@ -473,9 +473,6 @@
               <input id="image-upload" class="file-input" type="file" name="image" accept="image/*" onchange="onSelectFile()" required />
             </div>
 
-            <div class="buttons">
-              <button class="custom-button" type="submit" name="action" value="process" onclick="setLoadingText('Procesando e identificando rostro...')">Procesar imagen</button>
-            </div>
             <p class="hint">Tamaño máximo recomendado: 10 MB. Salida automatizada en formato JPG.</p>
 
             <div class="badge-grid">
@@ -500,6 +497,9 @@
               </div>
             </div>
             <div class="step-indicator">Paso actual: Entrada de datos</div>
+            <div class="buttons">
+              <button class="custom-button" type="submit" name="action" value="process" onclick="setLoadingText('Procesando e identificando rostro...')">Procesar imagen</button>
+            </div>
           </div>
         </main>
 
